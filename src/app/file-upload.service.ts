@@ -10,13 +10,10 @@ export class FileUploadService {
 
    constructor(private http: HttpClient) {}
 
-   uploadFile(file: File): Observable<any> {
+   uploadFile(action: any): Observable<any> {
     const formData = new FormData();
-    formData.append('file', file);
-
-    return this.http.post(this.uploadUrl, formData, { responseType: 'text' }).pipe(
-      catchError(this.handleError)
-    );
+    formData.append('file', action.file);
+    return this.http.post(this.uploadUrl, formData, { responseType: 'text' }).pipe(catchError(this.handleError));
   }
 
   private handleError(error: HttpErrorResponse) {

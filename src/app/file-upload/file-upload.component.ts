@@ -1,5 +1,8 @@
 import { Component } from '@angular/core';
-import { FileUploadService } from '../file-upload.service';
+import { select, Store } from '@ngrx/store';
+import { uploadFile } from '../store/file-upload.actions';
+import { Observable } from 'rxjs';
+import { AppState, success, failure } from '../store/user.selectors';
 
 @Component({
   selector: 'app-file-upload',
@@ -10,8 +13,13 @@ export class FileUploadComponent {
   selectedFile: File | null = null;
   uploadProgress = false;
   errorMessage: string | null = null;
+  uploadSuccess$: Observable<any>;
+  uploadFailure$: Observable<any>;
 
-  constructor(private fileUploadService: FileUploadService) {}
+  constructor(private store: Store<AppState>) { 
+    this.uploadSuccess$ = this.store.pipe(select(success));
+    this.uploadFailure$ = this.store.pipe(select(failure));
+  }
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -25,19 +33,26 @@ export class FileUploadComponent {
       this.uploadProgress = true;
       this.errorMessage = null;
   
-      this.fileUploadService.uploadFile(this.selectedFile).subscribe(
-        (response) => {
-          console.log('Upload successful', response);
-          this.uploadProgress = false;
-          this.selectedFile = null;
-          (document.getElementById('fileInput') as HTMLInputElement).value = ''; 
-        },
-        (error) => {
-          console.error('Upload failed', error);
-          this.errorMessage = error;  // Use the detailed error message
-          this.uploadProgress = false;
-        }
-      );
+      this.store.dispatch(uploadFile({ file: this.selectedFile }));
     }
   }  
+  onRemoveFile() {
+    this.uploadProgress = false;
+    this.selectedFile = null;
+    (document.getElementById('fileInput') as HTMLInputElement).value = ''; 
+    this.errorMessage = 'File Uploaded Successfully!';
+  }
+  ngOnInit() {
+    this.uploadSuccess$.subscribe(state => {
+      if (state.uploadSuccess) {
+        this.onRemoveFile();
+      }
+    });
+    this.uploadFailure$.subscribe(state => {
+      if (state.uploadFailure) {
+        this.errorMessage = state.error; 
+        this.uploadProgress = false;
+      }
+    });
+  }
 }
