@@ -1,0 +1,8 @@
+<div class="file-upload">
+    <h2>Upload CSV File</h2>
+    <input type="file" id="fileInput" (change)="onFileSelected($event)" />
+    <button mat-raised-button (click)="onUpload()">Upload</button>
+    <mat-progress-bar *ngIf="uploadProgress" mode="indeterminate"></mat-progress-bar>
+    <mat-error *ngIf="errorMessage">{{ errorMessage }}</mat-error>
+  </div>
+  
